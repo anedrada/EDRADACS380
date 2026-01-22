@@ -31,42 +31,100 @@ class Scanner {
         char c = advance();
 
         switch (c) {
-            case '(':
-                addToken(LEFT_PAREN);
+            case '(': addToken(LEFT_PAREN); break;
+            case ')': addToken(RIGHT_PAREN); break;
+            case '{': addToken(LEFT_BRACE); break;
+            case '}': addToken(RIGHT_BRACE); break;
+            case ',': addToken(COMMA); break;
+            case '.': addToken(DOT); break;
+            case '-': addToken(DASH); break;
+            case'+': addToken(PLUS); break;
+            case ';': addToken(SEMICOLON); break;
+            case '/': addToken(SLASH); break;
+            case '*': addToken(STAR); break;
+            case '!':
+                if (match('=')) {
+                    addToken(BANG_EQUAL);
+                }  else {
+                addToken(BANG);
+                }
                 break;
-            case ')':
-                addToken(RIGHT_PAREN); 
+            case '=':
+                if (match('=')) {
+                    addToken(EQUAL_EQUAL);
+                }  else {
+                    addToken(EQUAL);
+                }
                 break;
-            case '{':
-                addToken(LEFT_BRACE);
+            case '<':
+                if (match('=')) {
+                    addToken(LESS_EQUAL);
+                } else {
+                    addToken(LESS);
+                }
                 break;
-            case '}':
-                addToken(RIGHT_BRACE);
-                break;
-            case ',':
-                addToken(COMMA);
-                break;
-            case '.':
-                addToken(DOT);
-                break;
-            case '-':
-                addToken(DASH);
-                breal;
-            case'+':
-                addToken(PLUS);
-                break;
-            case ';':
-                addToken(SEMICOLON);
+            case '>':
+                if (match('=')) {
+                    addToken(GREATER_EQUAL);
+                } else {
+                    addToken(GREATER);
+                }
                 break;
             case '/':
-                addToken(SLASH);
+                if (match('/')) {
+                    while (peek() != '\n' & !isAtEnd()); 
+                        advance();
+                } else {
+                    addToken(SLASH);
+                }
                 break;
-            case 'STAR':
-                addToken(STAR);
-                break
+            case ' ':
+            case '\r':
+            case '\t':
+                break;
+            case '\n':
+                    line ++;
+                    break;
+            case '"':
+                    string();
+                    break;
+            default:
+                    Lox.error(line, "broken");
+                    break;
+        } 
         }
     }
 
+    private void string() {
+        while (peek() != '"' && isAtEnd) {
+            if (peek() == '\n') line++;
+            advance();
+        }
+
+        if (isAtEnd()) {
+                Lox.error(line, "string not ended");
+                return;
+        }
+
+        advance();
+        String value = source.substring(start + 1, current - 1);
+
+        addToken(STRING, value);
+
+    }
+
+    private boolean match(char expected) {
+        if (isAtEnd()) return false;
+        if (source.charAt(current) != expected) return false;
+
+        current++;
+        return true;
+    }
+    
+    private char peek() {
+        if (isAtEnd()) return '\0';
+        return source.charAt(current);
+    }
 
     private boolean isAtEnd() {
         return current >= source. length();
@@ -85,5 +143,3 @@ class Scanner {
         tokens.add(new Token(type, text, literal, line));
         
     }
-
-}
